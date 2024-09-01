@@ -18,6 +18,7 @@ model User {
   name     String
   email    String @unique
   password String
+  rates    Rate[]
 }
 
 model Rate {
@@ -26,4 +27,6 @@ model Rate {
   description String   @db.Text
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  userId      Int?
+  user        User?    @relation(fields: [userId], references: [id])
 }

@@ -6,9 +6,21 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(request: NextRequest) {
   const body = await request.json();
 
-  const hashedPassword = await bcrypt.hash(body.password, 10);
-
   try {
+    // check for existing user
+    const existingUser = await prisma.user.findUnique({
+      where: { email: body.email },
+    });
+
+    if (existingUser) {
+      return NextResponse.json(
+        { error: "user is already exist! try with another email." },
+        { status: 400 }
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(body.password, 10);
+
     const user = await prisma.user.create({
       data: {
         name: body.name,
@@ -24,7 +36,11 @@ export async function POST(request: NextRequest) {
 
     // Return user data and token
     return NextResponse.json(
-      { user: { name: user.name, email: user.email }, token },
+      {
+        user: { name: user.name, email: user.email },
+        token,
+        message: "registered successfully.",
+      },
       { status: 201 }
     );
   } catch (error) {
